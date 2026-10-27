@@ -151,7 +151,7 @@ def main():
         logger.debug("Data loaded successfully for feature engineering.")
         
         # Perform feature engineering
-        max_features = 50
+        max_features = 60
         target_col = 'Target'
         text_cols = ['Feature']  # Specify the text columns to be used for feature engineering
         train_data_transformed, test_data_transformed = feature_engineering(train_data, test_data, text_cols, target_col, max_features)

@@ -1,0 +1,47 @@
+stages:
+  data_ingestion:
+    cmd: python src/data_ingestion.py
+    deps:
+      - src/data_ingestion.py
+    
+    outs:
+      - data/raw/raw_spam.csv
+      - data/train/train_data.csv
+      - data/test/test_data.csv
+  data_preprocessing:
+    cmd: python src/data_preprocessing.py
+    deps:
+      - src/data_preprocessing.py
+      - data/raw/raw_spam.csv
+      - data/train/train_data.csv
+      - data/test/test_data.csv
+    outs:
+      - data/interphase/train_transformed/train_transformed.csv
+      - data/interphase/test_transformed/test_transformed.csv
+  feature_engineering:
+    cmd: python src/feature_engineering.py
+    deps:
+      - src/feature_engineering.py
+      - data/interphase/train_transformed/train_transformed.csv
+      - data/interphase/test_transformed/test_transformed.csv
+    outs:
+      - data/processed/train_transformed.csv
+      - data/processed/test_transformed.csv
+  model_building:
+    cmd: python src/model_building.py
+    deps:
+      - src/model_building.py
+      - data/processed/train_transformed.csv
+    outs:
+      - models/trained_model.pkl
+  model_evaluation:
+    cmd: python src/model_evaluation.py
+    deps: 
+      - src/model_evaluation.py
+      - models/trained_model.pkl
+      - data/processed/test_transformed.csv
+    metrics:
+      - reports/evaluation_metrics.json:
+          cache: false
+  
+

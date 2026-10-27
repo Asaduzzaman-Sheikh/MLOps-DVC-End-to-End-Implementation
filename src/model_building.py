@@ -109,7 +109,6 @@ def main():
     try:
         # Load the training and testing data
         train_data = load_data('./data/processed/train_transformed.csv')
-        # test_data = load_data('./data/processed/test_transformed.csv')
         logger.debug("Training data loaded successfully.")
         
         # Start the model building process
