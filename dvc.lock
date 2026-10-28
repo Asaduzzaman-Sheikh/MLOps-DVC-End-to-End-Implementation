@@ -120,5 +120,5 @@ stages:
     outs:
     - path: reports/evaluation_metrics.json
       hash: md5
-      md5: 9b6f596bd8473e057d932415f14cd29a
-      size: 191
+      md5: 15bd3982cf448ec84335b8acea24c458
+      size: 192
