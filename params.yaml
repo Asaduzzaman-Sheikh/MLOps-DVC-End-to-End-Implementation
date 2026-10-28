@@ -1,0 +1,13 @@
+data_ingestion:
+  test_size: 0.3
+  random_state: 23
+
+feature_engineering:
+  max_features: 70
+
+model_building:
+  kernel: 'poly'
+  degree: 3
+  class_weight: 'balanced'
+  gamma: 'scale' 
+  probability: true

@@ -3,11 +3,14 @@ stages:
     cmd: python src/data_ingestion.py
     deps:
       - src/data_ingestion.py
-    
+    params:
+      - data_ingestion.test_size
+      - data_ingestion.random_state
     outs:
       - data/raw/raw_spam.csv
       - data/train/train_data.csv
       - data/test/test_data.csv
+
   data_preprocessing:
     cmd: python src/data_preprocessing.py
     deps:
@@ -18,22 +21,33 @@ stages:
     outs:
       - data/interphase/train_transformed/train_transformed.csv
       - data/interphase/test_transformed/test_transformed.csv
+
   feature_engineering:
     cmd: python src/feature_engineering.py
     deps:
       - src/feature_engineering.py
       - data/interphase/train_transformed/train_transformed.csv
       - data/interphase/test_transformed/test_transformed.csv
+    params:
+      - feature_engineering.max_features
     outs:
       - data/processed/train_transformed.csv
       - data/processed/test_transformed.csv
+
   model_building:
     cmd: python src/model_building.py
     deps:
       - src/model_building.py
       - data/processed/train_transformed.csv
+    params:
+      - model_building.kernel
+      - model_building.degree
+      - model_building.class_weight
+      - model_building.gamma
+      - model_building.probability
     outs:
       - models/trained_model.pkl
+
   model_evaluation:
     cmd: python src/model_evaluation.py
     deps: 
@@ -43,5 +57,3 @@ stages:
     metrics:
       - reports/evaluation_metrics.json:
           cache: false
-  
-

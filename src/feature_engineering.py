@@ -5,7 +5,7 @@ import logging
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
-
+import yaml
 # ------------------------------------------------------ LOGGING SETUP ------------------------------------------------------ #
 
 log_dir = 'logs'
@@ -34,6 +34,30 @@ file_handler.setFormatter(formatter)
 # Add the handlers to the logger
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+
+# Function to load the parameters
+def load_params(file_path: str) -> dict:
+    """ 
+        This function will take a 'file_path' to load all the parameters 
+
+    """
+    
+    try:
+        with open(file_path, 'r') as file:
+            params = yaml.safe_load(file)
+            logger.debug(f"Parameter is retrieved from {file_path}")
+            
+            return params
+    except FileNotFoundError:
+        logger.error("File not found at {file_path}")
+        raise
+    except yaml.YAMLError as e:
+        logger.error("YAML error: {e}") 
+        raise
+    except Exception as e:
+        logger.error("An unexpected error occurs: {e}")
+        raise
 
 # ------------------------------------------------------ FEATURE ENGINEERING STAGE ------------------------------------------------------ #
 # Define the function for loading data and performing feature engineering
@@ -151,7 +175,8 @@ def main():
         logger.debug("Data loaded successfully for feature engineering.")
         
         # Perform feature engineering
-        max_features = 60
+        params = load_params('params.yaml')
+        max_features = params['feature_engineering']['max_features']
         target_col = 'Target'
         text_cols = ['Feature']  # Specify the text columns to be used for feature engineering
         train_data_transformed, test_data_transformed = feature_engineering(train_data, test_data, text_cols, target_col, max_features)

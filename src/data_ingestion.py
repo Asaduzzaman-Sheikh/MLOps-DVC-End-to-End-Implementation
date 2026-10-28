@@ -3,6 +3,7 @@ from ast import main
 import os
 import pandas as pd
 import logging
+import yaml
 
 from sklearn.model_selection import train_test_split
 # ----------------------------------------------------------- LOGGING SETUP -----------------------------------------------------------
@@ -33,6 +34,30 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+
+# Function to load the parameters
+def load_params(file_path: str) -> dict:
+    """ 
+        This function will take a 'file_path' to load all the parameters 
+
+    """
+    
+    try:
+        with open(file_path, 'r') as file:
+            params = yaml.safe_load(file)
+            logger.debug(f"Parameter is retrieved from {file_path}")
+            
+            return params
+    except FileNotFoundError:
+        logger.error("File not found at {file_path}")
+        raise
+    except yaml.YAMLError as e:
+        logger.error("YAML error: {e}") 
+        raise
+    except Exception as e:
+        logger.error("An unexpected error occurs: {e}")
+        raise
 
 # ----------------------------------------------------------- DATA INGESTION STAGE -----------------------------------------------------------
 
@@ -147,8 +172,11 @@ def main():
         logger.debug("Data processed successfully")
         
         # Split data
-        test_size = 0.2
-        random_state = 42
+        
+        # Load the parameters
+        params = load_params('params.yaml')
+        test_size = params['data_ingestion']['test_size']
+        random_state = params['data_ingestion']['random_state']
         train_data, test_data = train_test_split(
             processed_data,
             test_size=test_size,

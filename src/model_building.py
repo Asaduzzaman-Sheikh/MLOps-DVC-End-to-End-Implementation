@@ -5,6 +5,7 @@ from sklearn.svm import SVC
 import logging
 
 import pickle
+import yaml
 
 # ------------------------------------------------------ LOGGING SETUP ------------------------------------------------------ #
 log_dir = 'logs'
@@ -26,6 +27,29 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+# Function to load the parameters
+def load_params(file_path: str) -> dict:
+    """ 
+        This function will take a 'file_path' to load all the parameters 
+
+    """
+    
+    try:
+        with open(file_path, 'r') as file:
+            params = yaml.safe_load(file)
+            logger.debug(f"Parameter is retrieved from {file_path}")
+            
+            return params
+    except FileNotFoundError:
+        logger.error("File not found at {file_path}")
+        raise
+    except yaml.YAMLError as e:
+        logger.error("YAML error: {e}") 
+        raise
+    except Exception as e:
+        logger.error("An unexpected error occurs: {e}")
+        raise
 
 # ------------------------------------------------------ MODEL BUILDING STAGE ------------------------------------------------------ #
 def load_data(file_path: str) -> pd.DataFrame:
@@ -113,18 +137,21 @@ def main():
         
         # Start the model building process
         logger.info("Starting model building process...")
-        params = {
-            'kernel': 'poly',
-            'degree': 3,
-            'class_weight': 'balanced',
-            'gamma': 'scale',
-            'probability': True 
+        params = load_params('params.yaml')
+        
+        params_grid = {
+            'kernel': params['model_building']['kernel'],
+            'degree': params['model_building']['degree'],
+            'class_weight': params['model_building']['class_weight'],
+            'gamma': params['model_building']['gamma'],
+            'probability': params['model_building']['probability']
         }
+        
         X_train = train_data.iloc[:, :-1].values
         y_train = train_data.iloc[:, -1].values
         
         
-        model = build_model(X_train, y_train, params)
+        model = build_model(X_train, y_train, params_grid)
         logger.info("Model building process completed successfully.")
         
         # Save the trained model to a file
