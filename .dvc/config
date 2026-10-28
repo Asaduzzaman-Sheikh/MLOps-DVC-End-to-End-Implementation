@@ -1,0 +1,4 @@
+[core]
+    remote = mystore
+['remote "mystore"']
+    url = s3://user-s3-bucket-test
