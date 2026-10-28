@@ -7,6 +7,9 @@ import json
 
 from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, precision_score, recall_score
 
+import yaml
+from dvclive import Live
+
 
 # ------------------------------------------------------ LOGGING SETUP ------------------------------------------------------ #
 log_dir = 'logs'
@@ -28,6 +31,29 @@ file_handler.setFormatter(formatter)
 
 logger.addHandler(console_handler)
 logger.addHandler(file_handler)
+
+# Function to load the parameters
+def load_params(file_path: str) -> dict:
+    """ 
+        This function will take a 'file_path' to load all the parameters 
+
+    """
+    
+    try:
+        with open(file_path, 'r') as file:
+            params = yaml.safe_load(file)
+            logger.debug(f"Parameter is retrieved from {file_path}")
+            
+            return params
+    except FileNotFoundError:
+        logger.error("File not found at {file_path}")
+        raise
+    except yaml.YAMLError as e:
+        logger.error("YAML error: {e}") 
+        raise
+    except Exception as e:
+        logger.error("An unexpected error occurs: {e}")
+        raise
 
 
 # ------------------------------------------------------ MODEL EVALUATION STAGE ------------------------------------------------------ #
@@ -163,12 +189,26 @@ def main():
         logger.debug("Model loaded successfully for evaluation.")
         
         # Evaluate the model
+        params = load_params('params.yaml')
+        logger.debug(f"Parameters loaded successfully for evaluation: {params}")
         metrics = evaluate_model(model, X_test, y_test)
         logger.info(f"Model evaluation completed successfully.")
-        
+
         # Save the evaluation metrics to a JSON file
         report_dir = './reports'
         save_metrics(metrics, report_dir)
+        
+        # Implement DVC Live to log metrics
+        with Live(save_dvc_exp = True )as live:
+            live.log_metric("accuracy", metrics["accuracy"])
+            live.log_metric("precision", metrics["precision"])
+            live.log_metric("recall", metrics["recall"])
+            live.log_metric("f1_score", metrics["f1_score"])
+            live.log_metric("roc_auc_score", metrics["roc_auc_score"])
+                    
+            live.log_params(params)
+                    
+        logger.info("Metrics and parameters logged successfully using DVC Live.")
         logger.info(f"Evaluation metrics saved successfully at {report_dir}")
     except FileNotFoundError as fnf_error:
         logger.error(f"File not found error: {fnf_error}")
